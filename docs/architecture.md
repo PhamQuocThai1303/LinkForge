@@ -74,7 +74,9 @@ flowchart TD
     P -->|Không có URL| F[404]
 ```
 
-TTL ban đầu trong PLAN là 1 giờ. Xóa URL phải invalidation cache; nếu xóa xảy ra đồng thời với cache miss, cần kiểm thử race để tránh phục hồi entry cũ. Chọn chiến lược cụ thể ở Phase 3. V2 chỉ loại bỏ **single API server** là SPOF; một NGINX, một PostgreSQL và một Redis vẫn có thể hỏng riêng. Không tuyên bố hệ thống đã đạt high availability toàn phần.
+TTL ban đầu là 1 giờ. Phase 3 dùng tombstone khi xóa URL và SET NX khi cache miss để hạn chế phục hồi entry cũ trong race. Phase 4 mới thêm nhiều API instance sau NGINX; một NGINX, một PostgreSQL và một Redis vẫn có thể hỏng riêng. Không tuyên bố hệ thống đã đạt high availability toàn phần.
+
+Phase 3 đã dùng Redis làm cache tạm thời cho redirect với TTL một giờ và tombstone sau khi xóa. Cache hit không query PostgreSQL; cache miss đọc PostgreSQL và SET NX. API fallback về PostgreSQL khi Redis unavailable. Chi tiết và giới hạn invalidation nằm trong [caching.md](caching.md).
 
 ## Các bước sau V2
 

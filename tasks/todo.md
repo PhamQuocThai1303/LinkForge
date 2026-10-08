@@ -105,3 +105,17 @@
 - [x] Compose services become healthy.
 - [x] A URL survives PostgreSQL container restart with the named volume.
 - [x] Phase 2 documentation and PLAN checkboxes are current.
+## Phase 3: Redis redirect cache
+
+### Task 11: Cache contract and redirect flow
+- [x] Add Application cache abstraction and cache-aside redirect behavior.
+- [x] Unit-test hit, miss, Redis failure, and delete race policy.
+
+### Task 12: Redis integration
+- [x] Implement Redis adapter, connection configuration, TTL, and tombstones.
+- [x] Integration-test real Redis cache hit, miss, delete, and failure fallback.
+
+### Task 13: Compose and runtime
+- [x] Add bounded Redis service to Compose.
+- [x] Document cache configuration and invalidation limits.
+- [x] Verify Docker rebuild, Redis restart, and PostgreSQL-backed redirect.

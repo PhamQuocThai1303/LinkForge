@@ -537,19 +537,19 @@ HIT      MISS
 
 ## Task
 
-- [ ] Add Redis package.
-- [ ] Add Redis connection configuration.
-- [ ] Tạo `ICacheService`.
-- [ ] Implement `RedisCacheService`.
-- [ ] Cache `shortCode -> originalUrl`.
-- [ ] Set TTL.
-- [ ] Handle cache miss.
-- [ ] Populate cache from DB.
-- [ ] Handle cache connection failure gracefully.
-- [ ] Invalidate cache khi URL bị cập nhật/xóa.
-- [ ] Viết unit test cho cache abstraction.
-- [ ] Viết integration test cache hit.
-- [ ] Viết integration test cache miss.
+- [x] Add Redis package.
+- [x] Add Redis connection configuration.
+- [x] Tạo `ICacheService`.
+- [x] Implement `RedisCacheService`.
+- [x] Cache `shortCode -> originalUrl`.
+- [x] Set TTL.
+- [x] Handle cache miss.
+- [x] Populate cache from DB.
+- [x] Handle cache connection failure gracefully.
+- [x] Invalidate cache khi URL bị xóa (update URL chưa có API ở phase này).
+- [x] Viết unit test cho cache abstraction.
+- [x] Viết integration test cache hit.
+- [x] Viết integration test cache miss.
 
 ## Cache policy
 
@@ -563,10 +563,10 @@ Sau khi benchmark có thể thay đổi.
 
 ## Hoàn thành phase khi
 
-- [ ] Redirect cache hit không query DB.
-- [ ] Cache miss query DB rồi cache lại.
-- [ ] Redis restart không làm mất source of truth.
-- [ ] API vẫn có thể fallback về DB nếu Redis unavailable.
+- [x] Redirect cache hit không query DB.
+- [x] Cache miss query DB rồi cache lại.
+- [x] Redis restart không làm mất source of truth.
+- [x] API vẫn có thể fallback về DB nếu Redis unavailable.
 
 ---
 
@@ -1350,7 +1350,7 @@ Redirect Event
 - [x] Phase 0 — System Design & Capacity
 - [x] Phase 1 — Basic URL Shortener
 - [x] Phase 2 — Docker
-- [ ] Phase 3 — Redis
+- [x] Phase 3 — Redis
 - [ ] Phase 4 — NGINX + Multiple API
 - [ ] Phase 5 — Load Testing + Observability
 - [ ] Phase 6 — Kafka + Analytics
@@ -1391,9 +1391,9 @@ Base62
 Redis
 ```
 
-- [ ] Cache hit
-- [ ] Cache miss
-- [ ] Fallback DB
+- [x] Cache hit
+- [x] Cache miss
+- [x] Fallback DB
 - [ ] Benchmark
 
 ## Milestone 3 — Horizontally Scalable API

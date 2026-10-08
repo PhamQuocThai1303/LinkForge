@@ -81,3 +81,23 @@ Run the API and PostgreSQL together with Docker Compose, while keeping the API c
 - The API is reachable from the host and can create and redirect a URL.
 - Replacing/restarting the PostgreSQL container with the Compose volume attached preserves the URL.
 - `docker compose down` leaves the named volume available; `docker compose down -v` is the explicit destructive reset.
+
+## Phase 3: Redis redirect cache
+
+### Objective
+
+Reduce PostgreSQL lookups for repeated redirects while preserving PostgreSQL as the source of truth.
+
+### Contract and decisions
+
+- `IUrlCache` in Application stores `url:{shortCode}` to original URL for one hour. Infrastructure implements it with StackExchange.Redis. With no Redis configuration, use a no-op cache for local PostgreSQL-only runs.
+- Redirect is cache-aside: hit returns HTTP 302 without repository lookup; miss reads PostgreSQL and fills Redis. Metadata continues to read PostgreSQL.
+- Redis errors are logged and treated as cache misses or skipped writes. PostgreSQL readiness does not depend on Redis.
+- After a successful database delete, write a one-hour tombstone to Redis. Miss fills use SET NX, so a concurrent stale database read cannot overwrite a tombstone. Generated codes are never reused.
+- Redis is ephemeral with no persistence. Memory policy is configurable; start with a bounded memory allocation and LRU eviction. A transient network partition exactly during delete may leave a stale cached value until TTL expiry; stronger cross-system delete guarantees require a durable invalidation mechanism.
+
+### Implementation and verification
+
+1. Add cache abstraction and redirect path with focused unit tests for hit, miss, failure, and delete race.
+2. Add Redis adapter and configuration; exercise real Redis in integration tests for hit, miss, delete, and unavailable behavior.
+3. Add Compose Redis service, documentation, and run-time checks including Redis restart and PostgreSQL-backed fallback.

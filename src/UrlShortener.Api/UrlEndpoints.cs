@@ -81,8 +81,8 @@ public static class UrlEndpoints
                 return NotFound();
             }
 
-            var url = await service.FindAsync(shortCode, cancellationToken);
-            return url is null ? NotFound() : Results.Redirect(url.OriginalUrl, permanent: false);
+            var originalUrl = await service.FindRedirectTargetAsync(shortCode, cancellationToken);
+            return originalUrl is null ? NotFound() : Results.Redirect(originalUrl, permanent: false);
         })
         .WithName("RedirectShortUrl")
         .WithTags("Redirect")

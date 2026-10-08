@@ -1,6 +1,6 @@
 # LinkForge
 
-LinkForge is a URL shortener built in stages from [PLAN.md](PLAN.md). Phase 2 runs the ASP.NET Core 10 API and PostgreSQL together with Docker Compose. The API creates seven-character Base62 links, redirects with HTTP 302, exposes public link metadata, and lets the creator delete a link with a management token.
+LinkForge is a URL shortener built in stages from [PLAN.md](PLAN.md). Phase 3 runs the ASP.NET Core 10 API, PostgreSQL, and Redis together with Docker Compose. The API creates seven-character Base62 links, redirects with HTTP 302, exposes public link metadata, and lets the creator delete a link with a management token.
 
 ## Requirements
 
@@ -17,7 +17,7 @@ docker compose up --build -d
 docker compose ps
 ```
 
-The API is available at `http://localhost:8080`. Compose waits for PostgreSQL readiness, applies pending EF Core migrations once the database is reachable, and exposes:
+The API is available at `http://localhost:8080`. Compose waits for PostgreSQL and Redis readiness, applies pending EF Core migrations once the database is reachable, and exposes:
 
 ```text
 GET http://localhost:8080/                # service status and API paths
@@ -38,6 +38,8 @@ docker compose down -v
 ```
 
 The named `postgres-data` volume is the persistence boundary. Recreating the PostgreSQL container without `-v` keeps the URLs.
+
+Redis caches redirect mappings for one hour. A cache hit avoids PostgreSQL; on a miss or Redis failure, the API reads PostgreSQL. Redis has no persistent volume, so restarting it clears cached mappings without losing URLs. Deletion writes a cache tombstone; see [cache behavior and its failure limit](docs/caching.md). Local `dotnet run` uses PostgreSQL directly unless `Redis__ConnectionString` is set.
 
 To inspect the local database with DataGrip, use host `127.0.0.1`, port `5432` (or `POSTGRES_PORT` from `.env`), database `linkforge`, user `linkforge`, and password `localpass` unless overridden in `.env`. Compose binds PostgreSQL to localhost only.
 
@@ -98,7 +100,7 @@ dotnet test tests/UrlShortener.UnitTests/UrlShortener.UnitTests.csproj
 dotnet test tests/UrlShortener.IntegrationTests/UrlShortener.IntegrationTests.csproj
 ```
 
-Integration tests start a temporary PostgreSQL 18 container, apply the EF Core migration, exercise HTTP endpoints, and remove the container. Docker Desktop must be running.
+Integration tests start temporary PostgreSQL 18 and Redis 8 containers, apply the EF Core migration, exercise HTTP endpoints, and remove the containers. Docker Desktop must be running.
 
 ## Structure
 
@@ -111,4 +113,4 @@ Integration tests start a temporary PostgreSQL 18 container, apply the EF Core m
 | `tests/` | Unit and PostgreSQL integration tests |
 | `docs/` | Requirements, capacity model, architecture |
 
-PostgreSQL is the source of truth. Redis, NGINX, Kafka and custom aliases belong to later phases in [PLAN.md](PLAN.md).
+PostgreSQL is the source of truth. NGINX, Kafka and custom aliases belong to later phases in [PLAN.md](PLAN.md).

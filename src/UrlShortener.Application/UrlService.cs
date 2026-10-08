@@ -13,7 +13,7 @@ public enum DeleteResult
     Forbidden
 }
 
-public sealed class UrlService(IUrlRepository repository, TimeProvider timeProvider)
+public sealed class UrlService(IUrlRepository repository, ICacheService cache, TimeProvider timeProvider)
 {
     public async Task<CreatedUrl> CreateAsync(string originalUrl, CancellationToken cancellationToken)
     {
@@ -44,6 +44,34 @@ public sealed class UrlService(IUrlRepository repository, TimeProvider timeProvi
         return entry is null ? null : new UrlInfo(entry.ShortCode, entry.OriginalUrl, entry.CreatedAt);
     }
 
+    public async Task<string?> FindRedirectTargetAsync(string shortCode, CancellationToken cancellationToken)
+    {
+        var cached = await cache.GetAsync(shortCode, cancellationToken);
+        if (cached.State == CacheState.Found)
+        {
+            return cached.OriginalUrl;
+        }
+
+        if (cached.State == CacheState.Deleted)
+        {
+            return null;
+        }
+
+        var entry = await repository.FindAsync(shortCode, cancellationToken);
+        if (entry is null)
+        {
+            return null;
+        }
+
+        await cache.SetIfAbsentAsync(shortCode, entry.OriginalUrl, cancellationToken);
+        if ((await cache.GetAsync(shortCode, cancellationToken)).State == CacheState.Deleted)
+        {
+            return null;
+        }
+
+        return entry.OriginalUrl;
+    }
+
     public async Task<DeleteResult> DeleteAsync(string shortCode, string? token, CancellationToken cancellationToken)
     {
         var entry = await repository.FindAsync(shortCode, cancellationToken);
@@ -65,6 +93,7 @@ public sealed class UrlService(IUrlRepository repository, TimeProvider timeProvi
         }
 
         await repository.DeleteAsync(entry, cancellationToken);
+        await cache.MarkDeletedAsync(shortCode, cancellationToken);
         return DeleteResult.Deleted;
     }
 }
