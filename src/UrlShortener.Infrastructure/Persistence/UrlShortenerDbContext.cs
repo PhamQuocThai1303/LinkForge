@@ -1,0 +1,41 @@
+using Microsoft.EntityFrameworkCore;
+using UrlShortener.Domain;
+
+namespace UrlShortener.Infrastructure.Persistence;
+
+public sealed class UrlShortenerDbContext(DbContextOptions<UrlShortenerDbContext> options) : DbContext(options)
+{
+    public DbSet<UrlEntry> Urls => Set<UrlEntry>();
+    public DbSet<User> Users => Set<User>();
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.HasSequence<long>("url_ids").StartsAt(100_000_000_000);
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.ToTable("users");
+            entity.HasKey(user => user.Id);
+            entity.Property(user => user.Id).HasColumnName("id").UseIdentityByDefaultColumn();
+            entity.Property(user => user.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
+            entity.Property(user => user.Email).HasColumnName("email").HasMaxLength(320).IsRequired();
+            entity.HasIndex(user => user.Email).IsUnique();
+            entity.Property(user => user.ApiKeyHash).HasColumnName("api_key_hash").HasMaxLength(128).IsRequired();
+            entity.Property(user => user.CreatedAt).HasColumnName("created_at").IsRequired();
+        });
+
+        modelBuilder.Entity<UrlEntry>(entity =>
+        {
+            entity.ToTable("urls");
+            entity.HasKey(url => url.Id);
+            entity.Property(url => url.Id).HasColumnName("id").ValueGeneratedNever();
+            entity.Property(url => url.ShortCode).HasColumnName("short_code").HasMaxLength(16).IsRequired();
+            entity.HasIndex(url => url.ShortCode).IsUnique();
+            entity.Property(url => url.OriginalUrl).HasColumnName("original_url").IsRequired();
+            entity.Property(url => url.ManagementTokenHash).HasColumnName("management_token_hash").IsRequired();
+            entity.Property(url => url.UserId).HasColumnName("user_id");
+            entity.HasOne<User>().WithMany().HasForeignKey(url => url.UserId).OnDelete(DeleteBehavior.Restrict);
+            entity.Property(url => url.CreatedAt).HasColumnName("created_at").IsRequired();
+        });
+    }
+}
