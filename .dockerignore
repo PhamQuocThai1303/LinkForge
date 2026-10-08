@@ -1,0 +1,17 @@
+**/bin/
+**/obj/
+.git/
+.vs/
+.vscode/
+TestResults/
+*.user
+*.suo
+.env
+.env.*
+!/.env.example
+README.md
+tasks/
+tests/
+docs/
+skills/
+AGENTS.md

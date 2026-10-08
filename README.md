@@ -1,11 +1,45 @@
 # LinkForge
 
-LinkForge is a URL shortener built in stages from [PLAN.md](PLAN.md). Phase 1 is an ASP.NET Core 10 API backed by PostgreSQL. It creates seven-character Base62 links, redirects with HTTP 302, exposes public link metadata, and lets the creator delete a link with a management token.
+LinkForge is a URL shortener built in stages from [PLAN.md](PLAN.md). Phase 2 runs the ASP.NET Core 10 API and PostgreSQL together with Docker Compose. The API creates seven-character Base62 links, redirects with HTTP 302, exposes public link metadata, and lets the creator delete a link with a management token.
 
 ## Requirements
 
 - .NET SDK 10
-- Docker Desktop, for local PostgreSQL and integration tests
+- Docker Desktop, for Compose and integration tests
+
+## Run with Docker Compose
+
+Copy `.env.example` to `.env` and change the values when needed. The defaults are for local development only.
+
+```powershell
+Copy-Item .env.example .env
+docker compose up --build -d
+docker compose ps
+```
+
+The API is available at `http://localhost:8080`. Compose waits for PostgreSQL readiness, applies pending EF Core migrations once the database is reachable, and exposes:
+
+```text
+GET http://localhost:8080/                # service status and API paths
+GET http://localhost:8080/health/live   # process liveness
+GET http://localhost:8080/health/ready  # PostgreSQL and schema readiness
+```
+
+To stop the services while keeping the database volume:
+
+```powershell
+docker compose down
+```
+
+To explicitly delete the database volume and all local data:
+
+```powershell
+docker compose down -v
+```
+
+The named `postgres-data` volume is the persistence boundary. Recreating the PostgreSQL container without `-v` keeps the URLs.
+
+To inspect the local database with DataGrip, use host `127.0.0.1`, port `5432` (or `POSTGRES_PORT` from `.env`), database `linkforge`, user `linkforge`, and password `localpass` unless overridden in `.env`. Compose binds PostgreSQL to localhost only.
 
 ## Run locally
 
@@ -19,7 +53,7 @@ dotnet tool run dotnet-ef database update --project src/UrlShortener.Infrastruct
 dotnet run --project src/UrlShortener.Api --no-launch-profile -- --urls http://localhost:5000
 ```
 
-The API starts at `http://localhost:5000`. In Development, Swagger UI is at `http://localhost:5000/swagger`. Override `ShortUrls__BaseUrl` when the public short-link origin differs from `http://localhost:5000`. Run database migrations before starting the API; startup does not mutate the schema.
+The API starts at `http://localhost:5000`. In Development, Swagger UI is at `http://localhost:5000/swagger`. Override `ShortUrls__BaseUrl` when the public short-link origin differs from `http://localhost:5000`. Run database migrations before starting the API; startup does not mutate the schema unless `Database__MigrateOnStartup=true` is explicitly set (Compose sets it for the container deployment).
 
 ## API
 

@@ -89,6 +89,23 @@ public sealed class UrlApiTests : IAsyncLifetime
         Assert.Contains("/{shortCode}", swagger, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Health_endpoints_report_liveness_and_database_readiness()
+    {
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/health/live")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/health/ready")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Root_endpoint_reports_service_status()
+    {
+        var response = await client.GetFromJsonAsync<ServiceInfoResponse>("/");
+
+        Assert.Equal("LinkForge", response?.Service);
+        Assert.Equal("ok", response?.Status);
+        Assert.Equal("/api/v1/urls", response?.ApiBasePath);
+    }
+
     [Theory]
     [InlineData("javascript:alert(1)")]
     [InlineData("https://localhost/private")]

@@ -436,16 +436,16 @@ Docker Compose
 
 ## Task
 
-- [ ] Viết `Dockerfile`.
-- [ ] Viết `.dockerignore`.
-- [ ] Viết `docker-compose.yml`.
-- [ ] Containerize ASP.NET Core.
-- [ ] Containerize PostgreSQL.
-- [ ] Tạo persistent volume cho PostgreSQL.
-- [ ] Cấu hình connection string bằng environment variable.
-- [ ] Cấu hình health endpoint `/health`.
-- [ ] Cấu hình startup dependency.
-- [ ] Test database persistence.
+- [x] Viết `Dockerfile`.
+- [x] Viết `.dockerignore`.
+- [x] Viết `docker-compose.yml`.
+- [x] Containerize ASP.NET Core.
+- [x] Containerize PostgreSQL.
+- [x] Tạo persistent volume cho PostgreSQL.
+- [x] Cấu hình connection string bằng environment variable.
+- [x] Cấu hình health endpoint `/health/live` và `/health/ready`.
+- [x] Cấu hình startup dependency.
+- [x] Test database persistence.
 
 ## Environment
 
@@ -456,16 +456,16 @@ ASPNETCORE_ENVIRONMENT
 
 ## Health Check
 
-- [ ] `/health/live`
-- [ ] `/health/ready`
-- [ ] PostgreSQL readiness check.
+- [x] `/health/live`
+- [x] `/health/ready`
+- [x] PostgreSQL readiness check.
 
 ## Hoàn thành phase khi
 
-- [ ] `docker compose up` chạy toàn bộ.
-- [ ] Restart container không mất database.
+- [x] `docker compose up` chạy toàn bộ.
+- [x] Restart container không mất database.
 - [ ] API truy cập được từ host.
-- [ ] Health check hoạt động.
+- [x] Health check hoạt động.
 
 ---
 
@@ -1349,7 +1349,7 @@ Redirect Event
 
 - [x] Phase 0 — System Design & Capacity
 - [x] Phase 1 — Basic URL Shortener
-- [ ] Phase 2 — Docker
+- [x] Phase 2 — Docker
 - [ ] Phase 3 — Redis
 - [ ] Phase 4 — NGINX + Multiple API
 - [ ] Phase 5 — Load Testing + Observability

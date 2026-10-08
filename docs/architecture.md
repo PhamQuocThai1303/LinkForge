@@ -25,6 +25,19 @@ flowchart LR
 
 Giả định 200 redirect cho mỗi create khiến đường đọc là phần chịu tải lớn. Caching một tập URL nóng có thể giảm số lookup xuống PostgreSQL. Tuy nhiên, dữ liệu URL vẫn phải nằm trong PostgreSQL để giữ tính đúng khi cache mất dữ liệu.
 
+## V1 chạy bằng Docker Compose (Phase 2)
+
+```mermaid
+flowchart LR
+    C[Client] --> A[ASP.NET Core container]
+    A --> P[(PostgreSQL container)]
+    V[(Named volume)] --- P
+```
+
+Phase 2 giữ nguyên luồng dữ liệu của V1 nhưng đóng gói API và PostgreSQL thành hai service. Compose chờ PostgreSQL đạt `pg_isready` trước khi khởi động API. API có `/` để trả thông tin service và các đường dẫn chính, `/health/live` để kiểm tra process, và `/health/ready` để kiểm tra bảng URL qua PostgreSQL. EF Core migration chỉ chạy khi `Database__MigrateOnStartup=true`, được bật trong Compose để môi trường mới có thể khởi động tự động.
+
+Volume được mount tại `/var/lib/postgresql` theo layout của PostgreSQL 18. `docker compose down` giữ volume và dữ liệu; `docker compose down -v` là thao tác xóa dữ liệu có chủ ý. Đây là bước đóng gói và durability cho môi trường local, chưa giải quyết single API, single PostgreSQL hay load balancing.
+
 ## V2 — Cache và nhiều API instance (Phase 3–4)
 
 ```mermaid

@@ -71,3 +71,37 @@
 - [x] Full test suite passes.
 - [x] API create → redirect → delete works end to end.
 - [x] Phase 1 documentation is current.
+
+## Phase 2 tasks
+
+## Task 8: Add health checks and opt-in startup migration — done
+
+**Acceptance criteria:** The API exposes liveness without dependencies, readiness with a PostgreSQL check, and can apply pending migrations only when configured.
+**Verification:** Integration tests cover both health endpoints; solution build and tests pass.
+**Dependencies:** Task 7.
+**Files likely touched:** API, Infrastructure and integration tests.
+**Estimated scope:** Medium.
+
+## Task 9: Containerize the API — done
+
+**Acceptance criteria:** A multi-stage Dockerfile produces a non-development runtime image with port 8080 and an HTTP health check; build context excludes local artifacts and secrets.
+**Verification:** `docker build` succeeds and the image health check can reach `/health/ready` when run with a database.
+**Dependencies:** Task 8.
+**Files likely touched:** `Dockerfile`, `.dockerignore`.
+**Estimated scope:** Small.
+
+## Task 10: Add Compose deployment and persistence — done
+
+**Acceptance criteria:** Compose starts PostgreSQL and the API with environment-driven configuration, waits for database health, and mounts a named PostgreSQL volume.
+**Verification:** `docker compose up --build -d`, health checks, create/redirect, PostgreSQL restart, and persistence check.
+**Dependencies:** Tasks 8–9.
+**Files likely touched:** `docker-compose.yml`, `.env.example`, README and `.gitignore`.
+**Estimated scope:** Medium.
+
+## Checkpoint: Phase 2 complete
+
+- [x] Full .NET test suite passes.
+- [x] Docker image builds.
+- [x] Compose services become healthy.
+- [x] A URL survives PostgreSQL container restart with the named volume.
+- [x] Phase 2 documentation and PLAN checkboxes are current.

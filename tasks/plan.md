@@ -1,4 +1,4 @@
-# Implementation Plan: Phase 1 URL shortener
+# Implementation Plan: Phase 1 and Phase 2 URL shortener
 
 ## Overview
 
@@ -41,3 +41,43 @@ Build the first working LinkForge API on .NET 10 and PostgreSQL. Create distinct
 ## Open questions
 
 None blocking Phase 1. Account ownership and custom aliases remain later-phase decisions.
+
+## Phase 2: Dockerize application
+
+### Objective
+
+Run the API and PostgreSQL together with Docker Compose, while keeping the API configuration externalized and the database durable across container restarts.
+
+### Architecture decisions
+
+- Use a multi-stage Alpine Dockerfile so the runtime image contains only the published API.
+- Keep PostgreSQL as the source of truth and attach a named volume at `/var/lib/postgresql`, matching the PostgreSQL 18 image layout.
+- Compose waits for PostgreSQL's `pg_isready` health check before starting the API.
+- The API exposes `/health/live` without dependencies and `/health/ready` with a PostgreSQL URL-schema check.
+- Automatic EF migration is opt-in through `Database:MigrateOnStartup`; Compose enables it so a clean `docker compose up` is usable, while normal local runs preserve the manual migration workflow.
+- Use environment variables for the connection string, environment name, public short-link base URL, and host port. Local Compose defaults are intentionally development-only.
+
+### Implementation order
+
+1. Add health-check contracts and opt-in startup migration, with integration coverage.
+2. Add the multi-stage Dockerfile and ignore rules; build the image.
+3. Add Compose services, health dependencies, environment configuration, and the PostgreSQL volume.
+4. Update runbook and phase tracking; verify create, redirect, persistence, and health behavior through Compose.
+
+### Risks and mitigations
+
+| Risk | Mitigation |
+|---|---|
+| API starts before PostgreSQL accepts connections | Compose `service_healthy` dependency and PostgreSQL `pg_isready` health check. |
+| Startup migration is accidentally enabled outside Compose | Configuration defaults to false; only Compose sets `Database__MigrateOnStartup=true`. |
+| Database data disappears when the container is replaced | Named Docker volume and an explicit persistence verification. |
+| Runtime image lacks a probe client | Use the Alpine runtime's `wget` in the container health check and verify the image at runtime. |
+
+### Phase 2 acceptance criteria
+
+- `docker compose up --build -d` starts a healthy API and PostgreSQL.
+- `GET /health/live` returns `200` even when readiness dependencies are excluded.
+- `GET /health/ready` returns `200` only when PostgreSQL is reachable and the schema is available.
+- The API is reachable from the host and can create and redirect a URL.
+- Replacing/restarting the PostgreSQL container with the Compose volume attached preserves the URL.
+- `docker compose down` leaves the named volume available; `docker compose down -v` is the explicit destructive reset.
