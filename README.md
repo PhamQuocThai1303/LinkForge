@@ -17,10 +17,13 @@ docker compose up --build -d
 docker compose ps
 ```
 
-The API is available at `http://localhost:8080`. Compose waits for PostgreSQL and Redis readiness, applies pending EF Core migrations once the database is reachable, and exposes:
+The API is available at `http://localhost:8080`. Open the browser client at **`http://localhost:8080/app/`** to paste a URL, create a short link, and copy it. The management token is shown only in that create result; save it if you may need to delete the link later. The client keeps the result in page memory and clears it on reload.
+
+Compose waits for PostgreSQL and Redis readiness, applies pending EF Core migrations once the database is reachable, and exposes:
 
 ```text
 GET http://localhost:8080/                # service status and API paths
+GET http://localhost:8080/app/           # browser client
 GET http://localhost:8080/health/live   # process liveness
 GET http://localhost:8080/health/ready  # PostgreSQL and schema readiness
 ```
@@ -55,7 +58,7 @@ dotnet tool run dotnet-ef database update --project src/UrlShortener.Infrastruct
 dotnet run --project src/UrlShortener.Api --no-launch-profile -- --urls http://localhost:5000
 ```
 
-The API starts at `http://localhost:5000`. In Development, Swagger UI is at `http://localhost:5000/swagger`. Override `ShortUrls__BaseUrl` when the public short-link origin differs from `http://localhost:5000`. Run database migrations before starting the API; startup does not mutate the schema unless `Database__MigrateOnStartup=true` is explicitly set (Compose sets it for the container deployment).
+The API starts at `http://localhost:5000`, and the browser client is at `http://localhost:5000/app/`. In Development, Swagger UI is at `http://localhost:5000/swagger`. Override `ShortUrls__BaseUrl` when the public short-link origin differs from `http://localhost:5000`. Run database migrations before starting the API; startup does not mutate the schema unless `Database__MigrateOnStartup=true` is explicitly set (Compose sets it for the container deployment).
 
 ## API
 
@@ -107,6 +110,7 @@ Integration tests start temporary PostgreSQL 18 and Redis 8 containers, apply th
 | Path | Responsibility |
 |---|---|
 | `src/UrlShortener.Api` | HTTP routes, validation responses, Swagger, logging |
+| `src/UrlShortener.Api/wwwroot/app` | Same-origin browser client |
 | `src/UrlShortener.Application` | URL use cases and repository contract |
 | `src/UrlShortener.Domain` | URL data and Base62 codec |
 | `src/UrlShortener.Infrastructure` | EF Core model, migration, PostgreSQL repository |

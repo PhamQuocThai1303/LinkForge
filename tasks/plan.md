@@ -101,3 +101,22 @@ Reduce PostgreSQL lookups for repeated redirects while preserving PostgreSQL as 
 1. Add cache abstraction and redirect path with focused unit tests for hit, miss, failure, and delete race.
 2. Add Redis adapter and configuration; exercise real Redis in integration tests for hit, miss, delete, and unavailable behavior.
 3. Add Compose Redis service, documentation, and run-time checks including Redis restart and PostgreSQL-backed fallback.
+
+## Client MVP
+
+### Objective and contract
+
+Use the existing create API from a same-origin browser page at `/app/`. Display the generated short URL and one-time management token with copy actions. Preserve the current API and root service-status response. See `docs/client-mvp.md` for acceptance criteria.
+
+### Implementation order
+
+1. Serve static files at `/app/` and verify the HTTP route.
+2. Build the responsive form, result state, error state, and copy actions.
+3. Verify a real create/copy flow in a browser, run the .NET test suite, rebuild Compose, and document the client URL.
+
+### Risks
+
+| Risk | Mitigation |
+|---|---|
+| Public API origin differs from the page origin | Use relative API requests; Compose already sets the public short-link base URL. |
+| Management token is lost or exposed | Show it once, keep it in page memory, and avoid storage or logs. |

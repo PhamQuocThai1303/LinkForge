@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.Extensions.FileProviders;
 using Serilog;
 using UrlShortener.Api;
 using UrlShortener.Application;
@@ -26,6 +27,14 @@ await app.ApplyPendingMigrationsAsync();
 
 app.UseExceptionHandler();
 app.UseSerilogRequestLogging();
+app.UseFileServer(new FileServerOptions
+{
+    FileProvider = new PhysicalFileProvider(Path.Combine(app.Environment.ContentRootPath, "wwwroot", "app")),
+    RequestPath = "/app",
+    EnableDefaultFiles = true
+});
+// Let static /app files run before the catch-all /{shortCode} endpoint is selected.
+app.UseRouting();
 
 if (app.Environment.IsDevelopment())
 {

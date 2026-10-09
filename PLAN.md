@@ -41,7 +41,7 @@ Xây một URL Shortener tương tự TinyURL:
 - [ ] Redirect latency thấp.
 - [ ] Application có thể chạy nhiều instance.
 - [ ] Không có single application server là SPOF.
-- [ ] Cache giúp giảm tải database.
+- [x] Cache giúp giảm tải database.
 - [ ] Có thể tăng throughput bằng cách thêm application server.
 - [ ] Có hướng mở rộng database khi dataset lớn.
 - [ ] Analytics không làm chậm redirect path.
@@ -490,13 +490,13 @@ ASP.NET Core
 
 ## Kiến thức
 
-- [ ] Cache-aside pattern.
-- [ ] Cache hit.
-- [ ] Cache miss.
-- [ ] TTL.
-- [ ] Eviction.
-- [ ] Serialization.
-- [ ] Cache invalidation.
+- [x] Cache-aside pattern.
+- [x] Cache hit.
+- [x] Cache miss.
+- [x] TTL.
+- [x] Eviction.
+- [x] Serialization.
+- [x] Cache invalidation.
 
 ## Infrastructure
 
@@ -1499,11 +1499,11 @@ Chỉ chuyển phase khi bạn có thể trả lời:
 
 ## Sau Phase 3
 
-- [ ] Cache-aside là gì?
-- [ ] Cache hit/miss là gì?
-- [ ] Tại sao cache giảm DB load?
-- [ ] Nếu Redis chết thì sao?
-- [ ] Cache invalidation xử lý thế nào?
+- [x] Cache-aside là gì?
+- [x] Cache hit/miss là gì?
+- [x] Tại sao cache giảm DB load?
+- [x] Nếu Redis chết thì sao?
+- [x] Cache invalidation xử lý thế nào?
 
 ## Sau Phase 4
 
@@ -1556,7 +1556,7 @@ Project core được coi là hoàn thành khi:
 - [ ] Short code được sinh tự động bằng Counter + Base62.
 - [ ] Custom alias hoạt động.
 - [ ] PostgreSQL lưu source of truth.
-- [ ] Redis cache redirect mapping.
+- [x] Redis cache redirect mapping.
 - [ ] NGINX load balance nhiều API instances.
 - [ ] Một API instance chết không làm hệ thống dừng.
 - [ ] Có load test.

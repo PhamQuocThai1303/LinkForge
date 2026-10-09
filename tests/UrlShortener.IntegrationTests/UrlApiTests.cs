@@ -106,6 +106,23 @@ public sealed class UrlApiTests : IAsyncLifetime
         Assert.Equal("/api/v1/urls", response?.ApiBasePath);
     }
 
+    [Fact]
+    public async Task Client_page_and_assets_are_served()
+    {
+        var page = await client.GetAsync("/app/");
+        Assert.Equal(HttpStatusCode.OK, page.StatusCode);
+        Assert.Equal("text/html", page.Content.Headers.ContentType?.MediaType);
+        Assert.Contains("LinkForge", await page.Content.ReadAsStringAsync());
+
+        var stylesheet = await client.GetAsync("/app/styles.css");
+        Assert.Equal(HttpStatusCode.OK, stylesheet.StatusCode);
+        Assert.Equal("text/css", stylesheet.Content.Headers.ContentType?.MediaType);
+
+        var script = await client.GetAsync("/app/app.js");
+        Assert.Equal(HttpStatusCode.OK, script.StatusCode);
+        Assert.Contains("/api/v1/urls", await script.Content.ReadAsStringAsync());
+    }
+
     [Theory]
     [InlineData("javascript:alert(1)")]
     [InlineData("https://localhost/private")]

@@ -119,3 +119,18 @@
 - [x] Add bounded Redis service to Compose.
 - [x] Document cache configuration and invalidation limits.
 - [x] Verify Docker rebuild, Redis restart, and PostgreSQL-backed redirect.
+
+## Client MVP
+
+### Task 14: Serve the client
+- [x] Publish `/app/` with the API without changing existing routes.
+- [x] Verify `/app/` returns HTML and its assets load.
+
+### Task 15: Create and copy
+- [x] Build responsive, accessible create form and result states.
+- [x] Wire create API, validation/error handling, and copy actions.
+- [x] Verify the flow in a browser at desktop and mobile widths.
+
+### Task 16: Handoff
+- [x] Update README with the client URL and usage.
+- [x] Run the solution tests, build, and Compose runtime check.

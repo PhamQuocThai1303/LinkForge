@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f5ef">
+  <title>LinkForge — Rút gọn URL</title>
+  <meta name="description" content="Tạo một đường link ngắn, dễ chia sẻ với LinkForge.">
+  <link rel="icon" href="/app/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app/styles.css">
+  <script src="/app/app.js" defer></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="/app/" aria-label="LinkForge — trang chủ">
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <path d="M15.5 12.5h-2a8 8 0 0 0 0 16h4m7-16h2a8 8 0 0 1 0 16h-4M14 20h12" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+        </svg>
+        <span>linkforge<span class="brand-dot">.</span></span>
+      </a>
+      <span class="header-note">Biến link dài thành link gọn</span>
+    </header>
+
+    <main>
+      <div class="intro">
+        <h1>Link dài,<br><span>chia sẻ gọn.</span></h1>
+        <p>Dán URL của bạn để tạo một đường link ngắn, dễ nhớ và sẵn sàng chia sẻ.</p>
+      </div>
+
+      <div class="workspace">
+        <section class="form-panel" aria-labelledby="form-title">
+          <div class="panel-heading">
+            <span class="panel-number" aria-hidden="true">01</span>
+            <h2 id="form-title">Tạo link mới</h2>
+          </div>
+
+          <form id="shorten-form" novalidate>
+            <label for="original-url">URL gốc</label>
+            <div class="input-wrap">
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M10 13.5a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10.9 5.54m2.2 4.96a5 5 0 0 0-7.07 0L3.9 12.62a5 5 0 0 0 7.07 7.07l1.22-1.22" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <input id="original-url" name="url" type="url" inputmode="url" autocomplete="url" spellcheck="false" maxlength="2048" placeholder="https://example.com/your-long-url" aria-describedby="url-hint form-error" required>
+            </div>
+            <p class="field-hint" id="url-hint">Dùng link HTTP hoặc HTTPS, tối đa 2.048 ký tự.</p>
+            <p class="form-error" id="form-error" role="alert" hidden></p>
+            <p class="sr-only" id="create-status" role="status" aria-live="polite"></p>
+
+            <button class="primary-button" id="submit-button" type="submit">
+              <span id="submit-label">Rút gọn URL</span>
+              <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </form>
+
+          <p class="form-footnote">Mỗi lần tạo sẽ có một short URL mới.</p>
+        </section>
+
+        <section class="result-panel" aria-labelledby="result-title">
+          <div class="panel-heading">
+            <span class="panel-number" aria-hidden="true">02</span>
+            <h2 id="result-title">Kết quả của bạn</h2>
+          </div>
+
+          <div class="empty-state" id="empty-state">
+            <div class="empty-graphic" aria-hidden="true">
+              <span class="loop loop-one"></span>
+              <span class="loop loop-two"></span>
+              <span class="loop-line"></span>
+            </div>
+            <p>Link ngắn sẽ xuất hiện ở đây.</p>
+            <span>Nhập URL bên trái để bắt đầu.</span>
+          </div>
+
+          <div class="result-state" id="result-state" hidden>
+            <p class="result-label">Link đã tạo</p>
+            <div class="short-link-row">
+              <a id="short-url" href="#" target="_blank" rel="noopener noreferrer"></a>
+              <button class="copy-button" id="copy-url" type="button" aria-label="Sao chép link ngắn">Sao chép</button>
+            </div>
+            <p class="result-original" id="result-original"></p>
+
+            <div class="token-panel">
+              <div class="token-heading">
+                <p>Mã quản lý</p>
+                <span>Chỉ hiển thị một lần</span>
+              </div>
+              <p class="token-description">Lưu mã này nếu bạn muốn xoá link sau này.</p>
+              <div class="token-row">
+                <code id="management-token"></code>
+                <button class="copy-button token-copy" id="copy-token" type="button" aria-label="Sao chép mã quản lý">Sao chép mã</button>
+              </div>
+            </div>
+            <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <span>LinkForge</span>
+      <span>Mã quản lý không được lưu trên trình duyệt.</span>
+    </footer>
+  </div>
+</body>
+</html>
