@@ -1,5 +1,6 @@
 using UrlShortener.Application;
 using UrlShortener.Domain;
+using System.Security.Claims;
 
 namespace UrlShortener.Api;
 
@@ -20,7 +21,9 @@ public static class UrlEndpoints
                 });
             }
 
-            var created = await service.CreateAsync(request.Url!, cancellationToken);
+            long? userId = long.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var parsedId)
+                ? parsedId : null;
+            var created = await service.CreateAsync(request.Url!, cancellationToken, userId);
             var baseUrl = configuration["ShortUrls:BaseUrl"]?.TrimEnd('/')
                 ?? throw new InvalidOperationException("ShortUrls:BaseUrl is required.");
             var response = new CreateShortUrlResponse(

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f5ef">
+  <title>Đăng nhập — LinkForge</title>
+  <meta name="description" content="Đăng nhập LinkForge để tiếp tục tạo link ngắn.">
+  <link rel="icon" href="/app/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app/styles.css">
+  <link rel="stylesheet" href="/app/auth.css">
+  <script src="/app/auth.js" defer></script>
+</head>
+<body data-auth-mode="login">
+  <div class="auth-shell">
+    <header class="auth-header">
+      <a class="brand" href="/app/" aria-label="LinkForge — trang chủ">
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M15.5 12.5h-2a8 8 0 0 0 0 16h4m7-16h2a8 8 0 0 1 0 16h-4M14 20h12" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/></svg>
+        <span>linkforge<span class="brand-dot">.</span></span>
+      </a>
+      <a class="auth-header-link" href="/app/signup.html">Tạo tài khoản miễn phí <span aria-hidden="true">↗</span></a>
+    </header>
+
+    <main class="auth-main">
+      <aside class="auth-story" aria-label="Giới thiệu LinkForge">
+        <div class="story-art" aria-hidden="true"><span class="story-loop loop-a"></span><span class="story-loop loop-b"></span><span class="story-bridge"></span></div>
+        <div class="story-content"><span class="story-index">01 / 02</span><h1>Link gọn.<br><em>Ý tưởng lớn.</em></h1><p>Đăng nhập để tạo liên kết gắn với tài khoản của bạn. Mọi thứ bắt đầu từ một đường link.</p></div>
+      </aside>
+
+      <section class="auth-form-side" aria-labelledby="auth-title">
+        <div class="auth-card">
+          <p class="form-kicker">CHÀO MỪNG QUAY LẠI</p>
+          <h2 id="auth-title">Đăng nhập</h2>
+          <p class="auth-subtitle">Tiếp tục tạo và chia sẻ link theo cách của bạn.</p>
+          <form id="auth-form" novalidate>
+            <div class="auth-field"><label for="email">Email</label><input id="email" name="email" type="email" autocomplete="email" inputmode="email" maxlength="320" placeholder="ban@example.com" required></div>
+            <div class="auth-field"><label for="password">Mật khẩu</label><div class="password-wrap"><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Nhập mật khẩu" required><button class="reveal-button" type="button" aria-label="Hiện mật khẩu" aria-pressed="false">Hiện</button></div></div>
+            <p class="auth-error" id="auth-error" role="alert" hidden></p>
+            <button class="auth-submit" id="auth-submit" type="submit">Đăng nhập <span aria-hidden="true">→</span></button>
+          </form>
+          <div class="auth-divider"><span>hoặc tiếp tục với</span></div>
+          <a class="google-button" id="google-login" href="/api/v1/auth/google"><span class="google-mark" aria-hidden="true">G</span> Google</a>
+          <p class="provider-note" id="provider-note" hidden></p>
+          <p class="auth-switch">Chưa có tài khoản? <a href="/app/signup.html">Đăng ký miễn phí</a></p>
+        </div>
+      </section>
+    </main>
+    <footer class="auth-footer"><span>© LinkForge</span><a href="/app/">Quay về trang rút gọn link</a></footer>
+  </div>
+</body>
+</html>

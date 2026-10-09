@@ -15,7 +15,7 @@ public enum DeleteResult
 
 public sealed class UrlService(IUrlRepository repository, ICacheService cache, TimeProvider timeProvider)
 {
-    public async Task<CreatedUrl> CreateAsync(string originalUrl, CancellationToken cancellationToken)
+    public async Task<CreatedUrl> CreateAsync(string originalUrl, CancellationToken cancellationToken, long? userId = null)
     {
         if (!UrlValidator.IsValid(originalUrl))
         {
@@ -31,6 +31,7 @@ public sealed class UrlService(IUrlRepository repository, ICacheService cache, T
             ShortCode = Base62.EncodeSeven(id),
             OriginalUrl = originalUrl,
             ManagementTokenHash = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)),
+            UserId = userId,
             CreatedAt = timeProvider.GetUtcNow()
         };
 

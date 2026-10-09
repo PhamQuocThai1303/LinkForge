@@ -19,7 +19,7 @@ RUN dotnet publish "src/UrlShortener.Api/UrlShortener.Api.csproj" \
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS final
 WORKDIR /app
 
-RUN apk add --no-cache krb5-libs
+RUN apk add --no-cache krb5-libs && mkdir -p /app/keys && chown $APP_UID /app/keys
 
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080

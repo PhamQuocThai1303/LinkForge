@@ -97,7 +97,7 @@ Chiến lược kiểm thử: unit test Base62 round-trip và URL validation; in
 
 ## 7. Quyết định dành cho phase sau
 
-1. Tài khoản/API key và quota sẽ cần thiết kế quyền riêng khi Phase 12 bắt đầu; bảng `users` đã có nhưng Phase 1 chưa cấp tài khoản.
+1. Sau Phase 3, authentication MVP đã thêm tài khoản email/mật khẩu và Google OAuth tùy chọn; API key và quota vẫn để phase sau. Bảng `users` có `password_hash`/`google_subject`, và link tạo khi đăng nhập ghi `user_id`. Chi tiết tại [auth.md](auth.md).
 2. Phase 8: custom alias có phân biệt chữ hoa/thường không, và alias 7 ký tự trùng không gian mã tự sinh sẽ được xử lý bằng chiến lược nào.
 3. Quy tắc chặn đích nội bộ qua DNS và abuse protection cần xử lý ở Phase 12. Phase 1 không fetch URL đích.
 

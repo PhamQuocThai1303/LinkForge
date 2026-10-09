@@ -19,6 +19,8 @@ docker compose ps
 
 The API is available at `http://localhost:8080`. Open the browser client at **`http://localhost:8080/app/`** to paste a URL, create a short link, and copy it. The management token is shown only in that create result; save it if you may need to delete the link later. The client keeps the result in page memory and clears it on reload.
 
+Create an account at **`http://localhost:8080/app/signup.html`** or sign in at **`http://localhost:8080/app/login.html`**. Email/password signup works without extra provider configuration. To enable Google OAuth, set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` and register `http://localhost:8080/signin-google` as an authorized redirect URI for a Google OAuth web client. Keep the secret out of version control. Replace `localhost:8080` with the public origin when deploying elsewhere. See [authentication design](docs/auth.md).
+
 Compose waits for PostgreSQL and Redis readiness, applies pending EF Core migrations once the database is reachable, and exposes:
 
 ```text
@@ -40,7 +42,7 @@ To explicitly delete the database volume and all local data:
 docker compose down -v
 ```
 
-The named `postgres-data` volume is the persistence boundary. Recreating the PostgreSQL container without `-v` keeps the URLs.
+The named `postgres-data` volume keeps URLs and accounts. The `auth-keys` volume keeps cookie encryption keys across app container replacements.
 
 Redis caches redirect mappings for one hour. A cache hit avoids PostgreSQL; on a miss or Redis failure, the API reads PostgreSQL. Redis has no persistent volume, so restarting it clears cached mappings without losing URLs. Deletion writes a cache tombstone; see [cache behavior and its failure limit](docs/caching.md). Local `dotnet run` uses PostgreSQL directly unless `Redis__ConnectionString` is set.
 
@@ -89,7 +91,11 @@ DELETE /api/v1/urls/{shortCode}
 X-Management-Token: <token returned at creation>
 ```
 
-The correct token returns `204`; a missing or wrong token returns `403`. A deleted code returns `404`. The database stores only the token's SHA-256 hash. Anonymous link creation is supported in this learning phase; accounts and API keys are not yet active.
+The correct token returns `204`; a missing or wrong token returns `403`. A deleted code returns `404`. The database stores only the token's SHA-256 hash. Anonymous link creation remains available; signed-in creations record the account ID. API keys are not active yet.
+
+### Accounts
+
+`POST /api/v1/auth/signup` accepts `{ "name", "email", "password" }`, and `POST /api/v1/auth/login` accepts `{ "email", "password" }`. Passwords need 12–128 characters. Both issue an HttpOnly session cookie. `GET /api/v1/auth/me` returns the signed-in user; `POST /api/v1/auth/logout` clears the cookie. First call `GET /api/v1/auth/csrf`, then send its returned `token` in `X-CSRF-TOKEN` for signup, login, or logout. Request a fresh CSRF token after the authentication state changes. `GET /api/v1/auth/google` starts Google OAuth when configured. An existing password account is never silently linked to a Google identity with the same email. Signup, login, and Google challenge are limited to 20 requests/minute/IP per app instance.
 
 ### Validation
 

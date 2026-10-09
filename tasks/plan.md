@@ -120,3 +120,21 @@ Use the existing create API from a same-origin browser page at `/app/`. Display 
 |---|---|
 | Public API origin differs from the page origin | Use relative API requests; Compose already sets the public short-link base URL. |
 | Management token is lost or exposed | Show it once, keep it in page memory, and avoid storage or logs. |
+
+## Authentication MVP
+
+### Build order
+
+1. Extend the user schema and migrate existing PostgreSQL data.
+2. Add local signup/login, cookie sessions, CSRF handling, and integration tests.
+3. Add Google OAuth with optional environment configuration and callback tests.
+4. Add login/signup UI and signed-in state to the existing client.
+5. Rebuild Compose and verify desktop/mobile and API flows.
+
+### Decisions and risks
+
+- Use ASP.NET Core cookies for same-origin browser sessions; keep anonymous URL creation available.
+- A signed-in create records user ID without changing the management token contract.
+- Reject Google/password email collisions rather than linking identities implicitly.
+- Persist Data Protection keys in Compose so replacing the app container does not log users out.
+- Google consent requires the app owner's OAuth credentials; all local flows and the challenge route can be verified without them.

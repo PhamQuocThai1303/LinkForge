@@ -121,6 +121,9 @@ public sealed class UrlApiTests : IAsyncLifetime
         var script = await client.GetAsync("/app/app.js");
         Assert.Equal(HttpStatusCode.OK, script.StatusCode);
         Assert.Contains("/api/v1/urls", await script.Content.ReadAsStringAsync());
+
+        foreach (var route in new[] { "/app/login.html", "/app/signup.html", "/app/auth.css", "/app/auth.js" })
+            Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(route)).StatusCode);
     }
 
     [Theory]

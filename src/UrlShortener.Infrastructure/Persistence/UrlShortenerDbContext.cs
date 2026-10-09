@@ -20,7 +20,10 @@ public sealed class UrlShortenerDbContext(DbContextOptions<UrlShortenerDbContext
             entity.Property(user => user.Name).HasColumnName("name").HasMaxLength(200).IsRequired();
             entity.Property(user => user.Email).HasColumnName("email").HasMaxLength(320).IsRequired();
             entity.HasIndex(user => user.Email).IsUnique();
-            entity.Property(user => user.ApiKeyHash).HasColumnName("api_key_hash").HasMaxLength(128).IsRequired();
+            entity.Property(user => user.ApiKeyHash).HasColumnName("api_key_hash").HasMaxLength(128);
+            entity.Property(user => user.PasswordHash).HasColumnName("password_hash");
+            entity.Property(user => user.GoogleSubject).HasColumnName("google_subject").HasMaxLength(255);
+            entity.HasIndex(user => user.GoogleSubject).IsUnique();
             entity.Property(user => user.CreatedAt).HasColumnName("created_at").IsRequired();
         });
 

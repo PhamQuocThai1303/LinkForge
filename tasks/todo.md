@@ -134,3 +134,17 @@
 ### Task 16: Handoff
 - [x] Update README with the client URL and usage.
 - [x] Run the solution tests, build, and Compose runtime check.
+
+## Authentication MVP
+
+### Task 17: Account schema and local API
+- [x] Migrate user password and Google identity fields while retaining existing data.
+- [x] Implement signup, login, logout, current-user, CSRF, and cookie session tests.
+
+### Task 18: Google OAuth
+- [x] Configure Google challenge, callback, account creation and collision behavior.
+- [x] Verify disabled/unconfigured and configured challenge paths without committing secrets.
+
+### Task 19: Browser pages and runtime
+- [x] Build responsive signup/login pages and show account state in `/app/`.
+- [x] Verify browser form flows, authenticated ownership, tests, build, and Compose.

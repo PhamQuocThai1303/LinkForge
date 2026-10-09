@@ -10,6 +10,46 @@ const originalUrl = document.querySelector('#result-original');
 const managementToken = document.querySelector('#management-token');
 const copyStatus = document.querySelector('#copy-status');
 const createStatus = document.querySelector('#create-status');
+const guestActions = document.querySelector('#guest-actions');
+const userActions = document.querySelector('#user-actions');
+const accountName = document.querySelector('#account-name');
+
+async function loadAccount() {
+  try {
+    const response = await fetch('/api/v1/auth/me', { cache: 'no-store' });
+    if (!response.ok) return;
+    const user = await response.json();
+    accountName.textContent = user.name;
+    guestActions.hidden = true;
+    userActions.hidden = false;
+  } catch {
+    // URL shortening remains available when account status cannot be loaded.
+  }
+}
+
+loadAccount();
+
+document.querySelector('#logout-button').addEventListener('click', async () => {
+  const button = document.querySelector('#logout-button');
+  button.disabled = true;
+  try {
+    const csrf = await fetch('/api/v1/auth/csrf', { cache: 'no-store' });
+    if (!csrf.ok) throw new Error('CSRF request failed');
+    const { token } = await csrf.json();
+    const response = await fetch('/api/v1/auth/logout', {
+      method: 'POST',
+      headers: { 'X-CSRF-TOKEN': token }
+    });
+    if (!response.ok) throw new Error('Logout failed');
+    userActions.hidden = true;
+    guestActions.hidden = false;
+    accountName.textContent = '';
+  } catch {
+    createStatus.textContent = 'Không thể đăng xuất lúc này. Vui lòng thử lại.';
+  } finally {
+    button.disabled = false;
+  }
+});
 
 function showError(message) {
   errorMessage.textContent = message;
