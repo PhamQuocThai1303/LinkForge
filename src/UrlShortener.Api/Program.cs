@@ -83,6 +83,7 @@ authentication.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
     options.SignInScheme = AuthEndpoints.ExternalScheme;
     options.CallbackPath = "/signin-google";
     options.ClaimActions.MapJsonKey("google_verified_email", "email_verified");
+    options.ClaimActions.MapJsonKey("google_picture", "picture");
     options.Events.OnRemoteFailure = context =>
     {
         context.Response.Redirect("/app/login.html?error=google-failed");

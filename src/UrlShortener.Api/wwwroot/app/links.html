@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f5ef">
+  <title>Link của tôi — LinkForge</title>
+  <link rel="icon" href="/app/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app/styles.css">
+  <link rel="stylesheet" href="/app/links.css">
+  <script src="/app/account.js" defer></script>
+  <script src="/app/links.js" defer></script>
+</head>
+<body data-require-auth="true">
+  <div class="page-shell">
+    <header class="site-header">
+      <a class="brand" href="/app/" aria-label="LinkForge — trang chủ">
+        <svg class="brand-mark" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+          <path d="M15.5 12.5h-2a8 8 0 0 0 0 16h4m7-16h2a8 8 0 0 1 0 16h-4M14 20h12" stroke="currentColor" stroke-width="3.6" stroke-linecap="round"/>
+        </svg>
+        <span>linkforge<span class="brand-dot">.</span></span>
+      </a>
+      <nav class="header-account" aria-label="Tài khoản">
+        <div class="guest-actions" id="guest-actions" hidden><a href="/app/login.html">Đăng nhập</a></div>
+        <div class="user-actions" id="user-actions" hidden>
+          <a class="my-links-nav current" href="/app/links.html" aria-current="page">Link của tôi</a>
+          <span class="account-avatar" id="account-avatar" role="img" aria-label="Avatar"><span id="avatar-initials"></span><img id="avatar-image" alt="" hidden></span>
+          <span id="account-name"></span><button id="logout-button" type="button">Đăng xuất</button>
+        </div>
+      </nav>
+    </header>
+
+    <main class="links-main">
+      <div class="links-heading">
+        <div>
+          <p class="eyebrow">Không gian của bạn</p>
+          <h1>Link của tôi<span>.</span></h1>
+          <p class="links-subtitle">Xem hiệu quả và chỉnh sửa các đường link bạn đã tạo.</p>
+        </div>
+        <a class="new-link-button" href="/app/">+ Tạo link mới</a>
+      </div>
+
+      <section class="links-overview" aria-label="Tổng quan">
+        <div><span>Tổng số link</span><strong id="total-links">—</strong></div>
+        <div><span>Lượt click (các link đang hiển thị)</span><strong id="page-clicks">—</strong></div>
+      </section>
+
+      <section class="links-panel" aria-labelledby="list-title">
+        <div class="list-heading"><h2 id="list-title">Danh sách link</h2><span id="page-label"></span></div>
+        <p id="links-status" class="links-status" role="status" aria-live="polite">Đang tải link...</p>
+        <div id="links-list" class="links-list"></div>
+        <div class="pagination" id="pagination" hidden>
+          <button type="button" id="previous-page">Trang trước</button>
+          <span id="pagination-label"></span>
+          <button type="button" id="next-page">Trang sau</button>
+        </div>
+      </section>
+    </main>
+
+    <p id="account-status" class="sr-only" role="status" aria-live="polite"></p>
+    <footer class="site-footer"><span>LinkForge</span><span>Link cũ sẽ ngừng hoạt động sau khi bạn đổi alias.</span></footer>
+  </div>
+</body>
+</html>

@@ -22,19 +22,23 @@ Thành công của đường đi cơ bản: tạo liên kết, lưu vào Postgre
 | FR-01 | `POST /api/v1/urls` nhận URL HTTP(S) hợp lệ, trả mã tự sinh duy nhất và short URL; mã tự sinh dài đúng 7 ký tự. | 1 |
 | FR-02 | `GET /{shortCode}` trả `302 Found` với `Location` là URL gốc; mã không có trong kho dữ liệu trả `404`. | 1 |
 | FR-03 | `GET /api/v1/urls/{shortCode}` trả thông tin liên kết theo hợp đồng API được chốt ở Phase 1. | 1 |
-| FR-04 | `DELETE /api/v1/urls/{shortCode}` cần `X-Management-Token` đã cấp khi tạo; sau khi xóa, redirect trả `404`. | 1 |
-| FR-05 | Người tạo có thể chọn custom alias tối đa 16 ký tự; alias phải hợp lệ, không thuộc danh sách reserved và không trùng mã đã có. | 8 |
-| FR-06 | Hệ thống đếm lượt redirect và cung cấp `GET /api/v1/urls/{shortCode}/stats`; mất hoặc chậm analytics worker không được chặn redirect. | 6 |
+| FR-04 | `DELETE /api/v1/urls/{shortCode}` cần `X-Management-Token` đã cấp khi tạo; chủ sở hữu đăng nhập có thể xóa link của mình bằng session + CSRF; sau khi xóa, redirect trả `404`. | 1 / account links |
+| FR-05 | Người dùng đăng nhập có thể đổi short code tối đa 16 ký tự; alias hợp lệ, không thuộc danh sách reserved, không trùng mã hiện tại hoặc mã đã nghỉ. | account links |
+| FR-06 | Hệ thống lưu số lượt redirect và trả `clickCount` trong `GET /api/v1/urls/mine`; lỗi ghi đếm không chặn `302`. | account links |
 | FR-07 | Liên kết không có TTL mặc định; chỉ biến mất khi được xóa hợp lệ. | 1 |
 
 ### Phạm vi theo thời điểm
 
 - **Phase 1:** tạo mã tự động, redirect, đọc thông tin, quy tắc xóa được chốt, PostgreSQL và kiểm thử.
 - **Phase 2–5:** Docker, Redis, nhiều API instance, load test và quan sát hệ thống. Chúng thay đổi cách vận hành, không thay đổi ý nghĩa của mã URL.
-- **Phase 6:** analytics bất đồng bộ.
+- **Phase 6:** analytics bất đồng bộ mở rộng; MVP hiện lưu bộ đếm tổng hợp đồng bộ để dashboard tài khoản dùng được.
 - **Phase 7:** bài thực hành database scaling.
 - **Phase 8:** custom alias.
 - **Ngoài phạm vi MVP:** microservices, multi-region, Kubernetes production, CDN, Redis Cluster và ClickHouse.
+
+### Account management increment
+
+Authentication MVP now uses UUID user IDs. A signed-in user can open `/app/links.html` to view owned links, click counts, edit a short alias, and delete without a management token. Initials are the default local-account avatar; a Google profile image is only accepted from a validated `googleusercontent.com` HTTPS URL. Alias changes retire the old code and reserve it permanently. Redirect click counts are persisted synchronously in the MVP and should move to the planned analytics path before high-volume traffic.
 
 ## 3. Yêu cầu phi chức năng
 

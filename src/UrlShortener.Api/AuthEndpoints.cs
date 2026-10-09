@@ -51,6 +51,7 @@ public static class AuthEndpoints
 
             var user = new User
             {
+                Id = Guid.NewGuid(),
                 Name = name,
                 Email = email,
                 CreatedAt = DateTimeOffset.UtcNow
@@ -104,7 +105,7 @@ public static class AuthEndpoints
             CancellationToken cancellationToken) =>
         {
             context.Response.Headers.CacheControl = "no-store";
-            if (!long.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
+            if (!Guid.TryParse(context.User.FindFirstValue(ClaimTypes.NameIdentifier), out var id))
                 return Results.Unauthorized();
 
             var user = await database.Users.AsNoTracking().SingleOrDefaultAsync(item => item.Id == id, cancellationToken);
@@ -148,9 +149,11 @@ public static class AuthEndpoints
                 var name = principal!.FindFirstValue(ClaimTypes.Name)?.Trim();
                 user = new User
                 {
+                    Id = Guid.NewGuid(),
                     Name = string.IsNullOrWhiteSpace(name) ? email.Split('@')[0] : name[..Math.Min(name.Length, 200)],
                     Email = email,
                     GoogleSubject = subject,
+                    AvatarUrl = GoogleAvatar(principal!.FindFirstValue("google_picture")),
                     CreatedAt = DateTimeOffset.UtcNow
                 };
                 database.Users.Add(user);
@@ -191,7 +194,14 @@ public static class AuthEndpoints
     private static IResult InvalidCredentials() => Results.Problem(statusCode: StatusCodes.Status401Unauthorized,
         title: "Invalid email or password.");
 
-    private static AuthUserResponse ToResponse(User user) => new(user.Id, user.Name, user.Email);
+    private static string? GoogleAvatar(string? value) =>
+        Uri.TryCreate(value, UriKind.Absolute, out var uri) &&
+        uri.Scheme == Uri.UriSchemeHttps &&
+        (uri.Host.Equals("googleusercontent.com", StringComparison.OrdinalIgnoreCase) ||
+         uri.Host.EndsWith(".googleusercontent.com", StringComparison.OrdinalIgnoreCase)) &&
+        value!.Length <= 2048 ? value : null;
+
+    private static AuthUserResponse ToResponse(User user) => new(user.Id, user.Name, user.Email, user.AvatarUrl);
 
     private static Task SignInAsync(HttpContext context, User user)
     {
@@ -209,4 +219,4 @@ public static class AuthEndpoints
 
 public sealed record SignUpRequest(string? Name, string? Email, string? Password);
 public sealed record LoginRequest(string? Email, string? Password);
-public sealed record AuthUserResponse(long Id, string Name, string Email);
+public sealed record AuthUserResponse(Guid Id, string Name, string Email, string? AvatarUrl);

@@ -9,6 +9,7 @@
   <link rel="icon" href="/app/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/app/styles.css">
   <script src="/app/app.js" defer></script>
+  <script src="/app/account.js" defer></script>
 </head>
 <body>
   <div class="page-shell">
@@ -22,7 +23,11 @@
       <nav class="header-account" aria-label="Tài khoản">
         <span class="header-note" id="header-note">Biến link dài thành link gọn</span>
         <div class="guest-actions" id="guest-actions"><a href="/app/login.html">Đăng nhập</a><a class="signup-link" href="/app/signup.html">Đăng ký miễn phí</a></div>
-        <div class="user-actions" id="user-actions" hidden><span id="account-name"></span><button id="logout-button" type="button">Đăng xuất</button></div>
+        <div class="user-actions" id="user-actions" hidden>
+          <a class="my-links-nav" href="/app/links.html">Link của tôi</a>
+          <span class="account-avatar" id="account-avatar" role="img" aria-label="Avatar"><span id="avatar-initials"></span><img id="avatar-image" alt="" hidden></span>
+          <span id="account-name"></span><button id="logout-button" type="button">Đăng xuất</button>
+        </div>
       </nav>
     </header>
 
@@ -60,6 +65,7 @@
           </form>
 
           <p class="form-footnote">Mỗi lần tạo sẽ có một short URL mới.</p>
+          <p class="form-footnote account-hint">Đăng nhập để xem lượt click và quản lý các link đã tạo.</p>
         </section>
 
         <section class="result-panel" aria-labelledby="result-title">
@@ -102,6 +108,8 @@
         </section>
       </div>
     </main>
+
+    <p id="account-status" class="sr-only" role="status" aria-live="polite"></p>
 
     <footer class="site-footer">
       <span>LinkForge</span>

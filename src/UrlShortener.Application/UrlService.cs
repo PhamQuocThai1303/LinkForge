@@ -13,30 +13,43 @@ public enum DeleteResult
     Forbidden
 }
 
+public sealed class ShortCodeConflictException : Exception { }
+
 public sealed class UrlService(IUrlRepository repository, ICacheService cache, TimeProvider timeProvider)
 {
-    public async Task<CreatedUrl> CreateAsync(string originalUrl, CancellationToken cancellationToken, long? userId = null)
+    public async Task<CreatedUrl> CreateAsync(string originalUrl, CancellationToken cancellationToken, Guid? userId = null)
     {
         if (!UrlValidator.IsValid(originalUrl))
         {
             throw new ArgumentException("A valid HTTP(S) URL is required.", nameof(originalUrl));
         }
 
-        var id = await repository.NextIdAsync(cancellationToken);
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
             .TrimEnd('=').Replace('+', '-').Replace('/', '_');
-        var entry = new UrlEntry
+        for (var attempt = 0; attempt < 10; attempt++)
         {
-            Id = id,
-            ShortCode = Base62.EncodeSeven(id),
-            OriginalUrl = originalUrl,
-            ManagementTokenHash = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)),
-            UserId = userId,
-            CreatedAt = timeProvider.GetUtcNow()
-        };
+            var id = await repository.NextIdAsync(cancellationToken);
+            var entry = new UrlEntry
+            {
+                Id = id,
+                ShortCode = Base62.EncodeSeven(id),
+                OriginalUrl = originalUrl,
+                ManagementTokenHash = SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(token)),
+                UserId = userId,
+                CreatedAt = timeProvider.GetUtcNow()
+            };
+            try
+            {
+                await repository.AddAsync(entry, cancellationToken);
+                return new CreatedUrl(entry.ShortCode, entry.OriginalUrl, token, entry.CreatedAt);
+            }
+            catch (ShortCodeConflictException) when (attempt < 9)
+            {
+                // A custom alias reserved the next Base62 value; advance the sequence.
+            }
+        }
 
-        await repository.AddAsync(entry, cancellationToken);
-        return new CreatedUrl(entry.ShortCode, entry.OriginalUrl, token, entry.CreatedAt);
+        throw new ShortCodeConflictException();
     }
 
     public async Task<UrlInfo?> FindAsync(string shortCode, CancellationToken cancellationToken)
@@ -93,6 +106,16 @@ public sealed class UrlService(IUrlRepository repository, ICacheService cache, T
             return DeleteResult.Forbidden;
         }
 
+        await repository.DeleteAsync(entry, cancellationToken);
+        await cache.MarkDeletedAsync(shortCode, cancellationToken);
+        return DeleteResult.Deleted;
+    }
+
+    public async Task<DeleteResult> DeleteOwnedAsync(string shortCode, Guid ownerId,
+        CancellationToken cancellationToken)
+    {
+        var entry = await repository.FindAsync(shortCode, cancellationToken);
+        if (entry is null || entry.UserId != ownerId) return DeleteResult.NotFound;
         await repository.DeleteAsync(entry, cancellationToken);
         await cache.MarkDeletedAsync(shortCode, cancellationToken);
         return DeleteResult.Deleted;

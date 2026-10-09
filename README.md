@@ -21,6 +21,8 @@ The API is available at `http://localhost:8080`. Open the browser client at **`h
 
 Create an account at **`http://localhost:8080/app/signup.html`** or sign in at **`http://localhost:8080/app/login.html`**. Email/password signup works without extra provider configuration. To enable Google OAuth, set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env` and register `http://localhost:8080/signin-google` as an authorized redirect URI for a Google OAuth web client. Keep the secret out of version control. Replace `localhost:8080` with the public origin when deploying elsewhere. See [authentication design](docs/auth.md).
 
+After signing in, the header shows an initials avatar for local accounts (or a validated Google avatar when Google provides one) and **Link của tôi** opens `http://localhost:8080/app/links.html`. The page lists owned links, persisted redirect clicks, and lets the owner change an alias or delete a link. User IDs are UUIDs; existing account-to-link ownership is migrated safely. See [account links design](docs/account-links.md).
+
 Compose waits for PostgreSQL and Redis readiness, applies pending EF Core migrations once the database is reachable, and exposes:
 
 ```text
@@ -92,6 +94,21 @@ X-Management-Token: <token returned at creation>
 ```
 
 The correct token returns `204`; a missing or wrong token returns `403`. A deleted code returns `404`. The database stores only the token's SHA-256 hash. Anonymous link creation remains available; signed-in creations record the account ID. API keys are not active yet.
+
+Signed-in owners can also delete their own link with `POST /api/v1/auth/csrf` followed by `DELETE /api/v1/urls/{shortCode}` and `X-CSRF-TOKEN`; management-token deletion remains available for anonymous links and API clients.
+
+### Account links
+
+```http
+GET /api/v1/urls/mine?page=1&pageSize=20
+PATCH /api/v1/urls/{shortCode}
+Content-Type: application/json
+X-CSRF-TOKEN: <csrf token>
+
+{"shortCode":"campaign-2026"}
+```
+
+The list requires the session cookie and returns only the caller's links with `clickCount`. Page size is capped at 50. Alias values use 3–16 ASCII letters, digits, hyphens, or underscores, start and end alphanumeric, and cannot be a seven-character generated code or reserved route. The old code is retired and cannot be claimed again. Each successful redirect increments `click_count` atomically in PostgreSQL; Redis still caches the destination mapping.
 
 ### Accounts
 

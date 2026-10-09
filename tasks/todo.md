@@ -148,3 +148,19 @@
 ### Task 19: Browser pages and runtime
 - [x] Build responsive signup/login pages and show account state in `/app/`.
 - [x] Verify browser form flows, authenticated ownership, tests, build, and Compose.
+
+## Account links and UUIDs
+
+### Task 20: UUID ownership and migration
+- [x] Convert user IDs and URL ownership foreign keys to UUID with a data-preserving migration.
+- [x] Add default/local and validated Google avatar data to the current-user contract.
+
+### Task 21: Link management API
+- [x] Add owner-only paginated link listing with persisted click counts.
+- [x] Add CSRF-protected alias edit, retired-code reservation, owner delete, and collision/isolation rules.
+- [x] Increment click counts on successful redirects while preserving Redis fallback behavior.
+
+### Task 22: Management client and verification
+- [x] Add shared avatar header and responsive `/app/links.html` dashboard.
+- [x] Add edit/delete interactions, empty/loading/error/pagination states, and account redirect.
+- [x] Add migration, API, UI asset, and ownership tests; verify build and runtime.

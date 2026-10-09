@@ -60,6 +60,8 @@ public sealed class AuthApiTests : IAsyncLifetime
         var user = await signup.Content.ReadFromJsonAsync<AuthUserResponse>();
         Assert.Equal("Alice", user?.Name);
         Assert.Equal("alice@example.com", user?.Email);
+        Assert.NotEqual(Guid.Empty, user?.Id);
+        Assert.Null(user?.AvatarUrl);
 
         using var me = await client.GetAsync("/api/v1/auth/me");
         Assert.Equal(HttpStatusCode.OK, me.StatusCode);
@@ -86,6 +88,101 @@ public sealed class AuthApiTests : IAsyncLifetime
         using var login = await PostAsync("login", new { email = "ALICE@example.com", password = "long-secure-password" }, csrf);
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/v1/auth/me")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Owner_can_list_count_edit_and_delete_links_without_a_management_token()
+    {
+        var anonymous = await client.PostAsJsonAsync("/api/v1/urls", new { url = "https://example.com/anonymous" });
+        Assert.Equal(HttpStatusCode.Created, anonymous.StatusCode);
+        var anonymousLink = await anonymous.Content.ReadFromJsonAsync<CreateShortUrlResponse>();
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/urls/mine")).StatusCode);
+
+        var csrf = await GetCsrfAsync();
+        using var signup = await PostAsync("signup", new
+        {
+            name = "Link Owner", email = "owner@example.com", password = "long-secure-password"
+        }, csrf);
+        var user = await signup.Content.ReadFromJsonAsync<AuthUserResponse>();
+        Assert.NotEqual(Guid.Empty, user!.Id);
+        var createdResponse = await client.PostAsJsonAsync("/api/v1/urls", new { url = "https://example.com/owned" });
+        var created = await createdResponse.Content.ReadFromJsonAsync<CreateShortUrlResponse>();
+        Assert.Equal(HttpStatusCode.Created, createdResponse.StatusCode);
+
+        Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync($"/{created!.ShortCode}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync($"/{created.ShortCode}")).StatusCode);
+        var mine = await client.GetFromJsonAsync<MyLinksResponse>("/api/v1/urls/mine?page=1&pageSize=20");
+        Assert.Equal(1, mine?.Total);
+        Assert.Equal(created.ShortCode, mine!.Links.Single().ShortCode);
+        Assert.Equal(2, mine.Links.Single().ClickCount);
+
+        using var missingCsrf = await client.PatchAsJsonAsync($"/api/v1/urls/{created.ShortCode}",
+            new { shortCode = "my-landing" });
+        Assert.Equal(HttpStatusCode.BadRequest, missingCsrf.StatusCode);
+        csrf = await GetCsrfAsync();
+        using var invalid = await PatchAliasAsync(client, created.ShortCode, "app", csrf);
+        Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        using var generatedSpace = await PatchAliasAsync(client, created.ShortCode, "Ab3dE45", csrf);
+        Assert.Equal(HttpStatusCode.BadRequest, generatedSpace.StatusCode);
+        using var occupied = await PatchAliasAsync(client, created.ShortCode, anonymousLink!.ShortCode, csrf);
+        Assert.Equal(HttpStatusCode.BadRequest, occupied.StatusCode);
+        using var changed = await PatchAliasAsync(client, created.ShortCode, "my-landing", csrf);
+        Assert.Equal(HttpStatusCode.OK, changed.StatusCode);
+        Assert.Equal("my-landing", (await changed.Content.ReadFromJsonAsync<MyLinkResponse>())?.ShortCode);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync($"/{created.ShortCode}")).StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync("/my-landing")).StatusCode);
+        Assert.Equal(3, (await client.GetFromJsonAsync<MyLinksResponse>("/api/v1/urls/mine"))!.Links.Single().ClickCount);
+        using var unchanged = await PatchAliasAsync(client, "my-landing", "my-landing", csrf);
+        Assert.Equal(HttpStatusCode.OK, unchanged.StatusCode);
+
+        using var retired = await PatchAliasAsync(client, "my-landing", created.ShortCode, csrf);
+        Assert.Equal(HttpStatusCode.BadRequest, retired.StatusCode);
+        using var deleteNoCsrf = await client.DeleteAsync("/api/v1/urls/my-landing");
+        Assert.Equal(HttpStatusCode.BadRequest, deleteNoCsrf.StatusCode);
+        using var delete = new HttpRequestMessage(HttpMethod.Delete, "/api/v1/urls/my-landing");
+        delete.Headers.Add("X-CSRF-TOKEN", csrf);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.SendAsync(delete)).StatusCode);
+        Assert.Equal(0, (await client.GetFromJsonAsync<MyLinksResponse>("/api/v1/urls/mine"))!.Total);
+        Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/my-landing")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Link_management_is_isolated_to_the_owner()
+    {
+        var csrf = await GetCsrfAsync();
+        using var signup = await PostAsync("signup", new
+        {
+            name = "First User", email = "first@example.com", password = "long-secure-password"
+        }, csrf);
+        var createdResponse = await client.PostAsJsonAsync("/api/v1/urls", new { url = "https://example.com/private" });
+        var created = await createdResponse.Content.ReadFromJsonAsync<CreateShortUrlResponse>();
+
+        using var other = application.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        var secondCsrf = (await other.GetFromJsonAsync<Dictionary<string, string>>("/api/v1/auth/csrf"))!["token"];
+        using var secondSignup = new HttpRequestMessage(HttpMethod.Post, "/api/v1/auth/signup")
+        {
+            Content = JsonContent.Create(new { name = "Second User", email = "second@example.com", password = "long-secure-password" })
+        };
+        secondSignup.Headers.Add("X-CSRF-TOKEN", secondCsrf);
+        Assert.Equal(HttpStatusCode.Created, (await other.SendAsync(secondSignup)).StatusCode);
+        secondCsrf = (await other.GetFromJsonAsync<Dictionary<string, string>>("/api/v1/auth/csrf"))!["token"];
+        Assert.Equal(0, (await other.GetFromJsonAsync<MyLinksResponse>("/api/v1/urls/mine"))!.Total);
+        using var edit = await PatchAliasAsync(other, created!.ShortCode, "steal-alias", secondCsrf);
+        Assert.Equal(HttpStatusCode.NotFound, edit.StatusCode);
+        using var delete = new HttpRequestMessage(HttpMethod.Delete, $"/api/v1/urls/{created.ShortCode}");
+        delete.Headers.Add("X-CSRF-TOKEN", secondCsrf);
+        Assert.Equal(HttpStatusCode.NotFound, (await other.SendAsync(delete)).StatusCode);
+        Assert.Equal(HttpStatusCode.Redirect, (await client.GetAsync($"/{created.ShortCode}")).StatusCode);
+    }
+
+    private static Task<HttpResponseMessage> PatchAliasAsync(HttpClient browser, string oldCode, string newCode, string csrf)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Patch, $"/api/v1/urls/{oldCode}")
+        {
+            Content = JsonContent.Create(new { shortCode = newCode })
+        };
+        request.Headers.Add("X-CSRF-TOKEN", csrf);
+        return browser.SendAsync(request);
     }
 
     [Fact]
@@ -210,6 +307,7 @@ public sealed class AuthApiTests : IAsyncLifetime
 
         var user = await browser.GetFromJsonAsync<AuthUserResponse>("/api/v1/auth/me");
         Assert.Equal("google.qa@example.com", user?.Email);
+        Assert.Equal("https://lh3.googleusercontent.com/avatar-test", user?.AvatarUrl);
         using var scope = application.Services.CreateScope();
         var stored = await scope.ServiceProvider.GetRequiredService<UrlShortenerDbContext>()
             .Users.SingleAsync(item => item.Id == user!.Id);
@@ -262,7 +360,7 @@ public sealed class AuthApiTests : IAsyncLifetime
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             var json = request.RequestUri!.AbsolutePath.Contains("userinfo", StringComparison.Ordinal)
-                ? """{"id":"google-subject-123","email":"google.qa@example.com","email_verified":true,"name":"Google QA"}"""
+                ? """{"id":"google-subject-123","email":"google.qa@example.com","email_verified":true,"name":"Google QA","picture":"https://lh3.googleusercontent.com/avatar-test"}"""
                 : """{"access_token":"fake-access-token","token_type":"Bearer","expires_in":3600}""";
             return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
             {

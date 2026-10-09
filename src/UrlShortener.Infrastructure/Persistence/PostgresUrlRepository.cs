@@ -1,5 +1,6 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 using UrlShortener.Application;
 using UrlShortener.Domain;
 
@@ -34,7 +35,18 @@ public sealed class PostgresUrlRepository(UrlShortenerDbContext dbContext) : IUr
     public async Task AddAsync(UrlEntry entry, CancellationToken cancellationToken)
     {
         dbContext.Urls.Add(entry);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        var reservation = new ReservedShortCode { Code = entry.ShortCode };
+        dbContext.ReservedShortCodes.Add(reservation);
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateException error) when (error.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            dbContext.Entry(entry).State = EntityState.Detached;
+            dbContext.Entry(reservation).State = EntityState.Detached;
+            throw new ShortCodeConflictException();
+        }
     }
 
     public Task<UrlEntry?> FindAsync(string shortCode, CancellationToken cancellationToken) =>

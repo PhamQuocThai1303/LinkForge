@@ -51,6 +51,10 @@ a { color: inherit; }
 .guest-actions .signup-link { padding: 11px 15px; border-radius: 8px; background: #31885e; color: #fff; }
 .guest-actions .signup-link:hover { background: #256f4d; text-decoration: none; }
 .user-actions span { font-size: 13px; font-weight: 700; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-actions .my-links-nav { color: #286e4e; font-size: 13px; font-weight: 750; text-decoration: none; white-space: nowrap; }
+.user-actions .my-links-nav:hover { text-decoration: underline; }
+.user-actions .account-avatar { width: 36px; height: 36px; max-width: none; flex: none; display: grid; place-items: center; position: relative; overflow: hidden; border-radius: 50%; background: #d8ecdd; color: #1d6742; font-size: 12px; font-weight: 800; letter-spacing: -.02em; }
+.account-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .user-actions button { border: 0; background: none; padding: 8px 0; }
 .user-actions button:hover { text-decoration: underline; }
 main { flex: 1; }
@@ -127,6 +131,8 @@ label { display: block; margin-bottom: 12px; font-size: 14px; font-weight: 700; 
 .primary-button:disabled { opacity: .7; transform: none; }
 .primary-button svg { width: 22px; height: 22px; }
 .form-footnote { margin: 22px 0 0; color: #829086; font-size: 13px; }
+.account-hint { margin-top: 8px; }
+.signed-in .account-hint, .signed-in .token-panel { display: none; }
 
 .empty-state { padding: 1px 0 20px; }
 .empty-graphic { width: 158px; height: 125px; position: relative; margin-bottom: 21px; }
@@ -178,6 +184,8 @@ label { display: block; margin-bottom: 12px; font-size: 14px; font-weight: 700; 
   .guest-actions a, .user-actions button { font-size: 12px; }
   .guest-actions .signup-link { padding: 9px 10px; }
   .user-actions span { max-width: 90px; }
+  .user-actions #account-name { display: none; }
+  .user-actions .account-avatar { width: 32px; height: 32px; }
   .intro { padding: 51px 0 35px; }
   h1 { font-size: clamp(50px, 13vw, 65px); }
   .intro p { font-size: 16px; }

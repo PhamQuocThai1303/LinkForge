@@ -80,7 +80,7 @@ form.addEventListener('submit', async (event) => {
       body: JSON.stringify(mode === 'signup' ? { name, email, password } : { email, password })
     });
     if (response.ok) {
-      location.replace('/app/');
+      location.replace(params.get('next') === 'links' ? '/app/links.html' : '/app/');
       return;
     }
     showError(response.status === 409 ? 'Email này đã được đăng ký. Hãy đăng nhập.'

@@ -28,10 +28,10 @@ Xây một URL Shortener tương tự TinyURL:
 - [ ] Tạo short URL từ long URL.
 - [ ] Redirect từ short URL → long URL bằng HTTP 302.
 - [ ] Short code mặc định dài 7 ký tự.
-- [ ] Hỗ trợ custom alias.
+- [x] Hỗ trợ custom alias.
 - [ ] Custom alias tối đa 16 ký tự.
-- [ ] Thu thập số lượt redirect.
-- [ ] Có REST API.
+- [x] Thu thập số lượt redirect.
+- [x] Có REST API.
 - [ ] URL sau khi tạo được giữ lâu dài theo scope của project.
 
 > Bài Medium giả định 100 triệu URL mới/tháng, tỷ lệ đọc/ghi 200:1, tương đương khoảng 40 create/s và 8.000 redirect/s ở mức trung bình. Đây là capacity model để học system design, không phải target bắt buộc ngay từ MVP.
